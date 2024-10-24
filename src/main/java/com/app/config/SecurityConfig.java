@@ -1,5 +1,6 @@
 package com.app.config;
 
+import com.app.persistence.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -28,22 +29,34 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Bean
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+//        return httpSecurity
+//                .csrf(csrf -> csrf.disable())
+//                .httpBasic(Customizer.withDefaults())
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authorizeHttpRequests(http -> {
+//                    //configuration los endpoints public
+//                    http.requestMatchers(HttpMethod.GET, "/auth/hello").permitAll();
+//                    //configuration los endpoints private
+//                    http.requestMatchers(HttpMethod.GET, "/auth/hello-secured").hasAuthority("CREATE");
+//                    //configuration endpoints - NO SPECIFICATION
+//                    http.anyRequest().denyAll();
+//                })
+//                .build();
+//    }
+
+      @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(http -> {
-                    //configuration los endpoints public
-                    http.requestMatchers(HttpMethod.GET, "/auth/hello").permitAll();
-                    //configuration los endpoints private
-                    http.requestMatchers(HttpMethod.GET, "/auth/hello-secured").hasAuthority("CREATE");
-                    //configuration endpoints - NO SPECIFICATION
-                    http.anyRequest().denyAll();
-                })
                 .build();
     }
+
+
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -51,31 +64,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider() {
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder());
-        provider.setUserDetailsService(userDetailsService());
+        provider.setUserDetailsService(userDetailsService);
         return provider;
     }
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        List<UserDetails> userDetailsList = new ArrayList<>();
-        userDetailsList.add(User.withUsername("davis")
-                .password("admin")
-                .roles("ADMIN")
-                .authorities("READ", "CREATE")
-                .build());
-        userDetailsList.add(User.withUsername("daniel")
-                .password("1234")
-                .roles("ADMIN")
-                .authorities("READ")
-                .build());
-        return new InMemoryUserDetailsManager(userDetailsList);
-    }
 
     @Bean
-    public ç passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return NoOpPasswordEncoder.getInstance();
     }
 
